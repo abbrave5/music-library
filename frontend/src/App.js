@@ -6,6 +6,8 @@ const API_BASE = '/api';
 
 function App() {
   const [scores, setScores] = useState([]);
+  const [loading, setLoading] = useState(true); //track loading
+  const [error, setError] = useState(null);
   const [query, setQuery] = useState({ text: '', aCappellaOnly: false });
   const [form, setForm] = useState({ title: '', arranger: '', style: '', tempo: '', a_cappella: false });
   const [file, setFile] = useState(null);
@@ -13,20 +15,27 @@ function App() {
 
   const fetchScores = async (q) => {
     try {
+      setLoading(true);   // start spinner
+      setError(null);     // reset error
       const res = await axios.get(`${API_BASE}/scores`, {
         params: {
-          q: q.text || '',
+          q: q.text || "",
           a_cappella: q.aCappellaOnly ? 1 : undefined,
-          t: Date.now()
-        }
+          t: Date.now(), // cache buster
+        },
       });
 
-      setScores(res.data.map(score => ({
-        ...score,
-        a_cappella: score.a_cappella == 1
-      })));
+      setScores(
+        res.data.map((score) => ({
+          ...score,
+          a_cappella: score.a_cappella == 1,
+        }))
+      );
     } catch (err) {
       console.error("Failed to fetch scores:", err);
+      setError("Failed to load scores. Please refresh the page or contact the site admin.");
+    } finally {
+      setLoading(false);  // stop spinner
     }
   };
 
@@ -108,7 +117,22 @@ function App() {
       alert("An error occurred while trying to delete the score.");
     }
   };
+if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen text-xl">
+        <span className="animate-spin border-4 border-blue-500 border-t-transparent rounded-full w-12 h-12 mr-3"></span>
+        Loading scores...
+      </div>
+    );
+  }
 
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen text-red-600">
+        {error}
+      </div>
+    );
+  }
   return (
     <div className="app">
       <h1>🎼 Mt. SAC Vocal Jazz Library</h1>

@@ -25,7 +25,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use('/api/pdfs', express.static(path.join(__dirname, 'pdfs')));
-//this code for debugginb
+//this code for debugging
 app.use((req, res, next) => {
   let size = 0;
   req.on('data', chunk => size += chunk.length);
